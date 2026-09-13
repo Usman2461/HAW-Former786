@@ -165,7 +165,6 @@ under their own terms.
   title   = {HAWFormer: Hierarchy-Aware Adaptive Graph Learning and Band-Wise
              Wavelet Transformer for Traffic Flow Prediction},
   author  = {Arshad, Muhammad Usman and Zhou, Kuanjiu and Li, Yicong},
-  journal = {IEEE Transactions on Intelligent Transportation Systems},
   year    = {2026}
 }
 ```
