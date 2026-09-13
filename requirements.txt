@@ -1,0 +1,10 @@
+torch>=2.0
+numpy>=1.23
+scipy>=1.9
+pandas>=1.5
+scikit-learn>=1.2
+PyYAML>=6.0
+gensim>=4.3        # skip-gram for the microscopic branch
+# optional: pymetis  -- used for balanced partitioning when present.
+# Without it the code falls back to a spectral + balanced-KMeans partitioner
+# implemented in hawformer/models/hierarchy.py, so nothing breaks.
