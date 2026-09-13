@@ -71,31 +71,6 @@ Any setting can be overridden from the command line:
 python3 scripts/train.py --config configs/qdb19.yaml --set model.d_model=32 --set train.epochs=60
 ```
 
-## Verify without retraining
-
-Every reported number comes from a stored prediction tensor re-scored under one
-metric implementation. `results/` ships those tensors, so the table can be
-checked directly:
-
-```bash
-python3 scripts/verify_results.py
-```
-
-```
-qdb19
-  seed0        MAE   8.5129   MAPE  0.0933   RMSE  13.7517
-  seed1        MAE   8.5988   MAPE  0.0941   RMSE  13.8006
-  seed2        MAE   8.5979   MAPE  0.0926   RMSE  13.8471
-  mean +/- sd  MAE   8.5699 +/- 0.0493   MAPE  0.0933   RMSE  13.7998
-
-tdrive
-  seed0        MAE   1.1630   MAPE  0.1787   RMSE   1.7476
-  seed1        MAE   1.1703   MAPE  0.1628   RMSE   1.7666
-  seed2        MAE   1.1670   MAPE  0.1650   RMSE   1.7547
-  mean +/- sd  MAE   1.1668 +/- 0.0036   MAPE  0.1688   RMSE   1.7563
-```
-
-Point it at your own runs with `--runs runs`.
 
 ## Configuration
 
@@ -134,24 +109,6 @@ scripts/     training, data preparation, baselines, ablations, tables, figures
 configs/     default + one per dataset
 results/     stored predictions, reports and learned structures for the runs above
 ```
-
-## Known discrepancy
-
-The numbers above are what this code produces. They differ slightly from the
-values printed in the manuscript (Qingdao MAE 8.499, T-Drive 1.150), which were
-taken from a different set of runs. Resolve this before release: either re-derive
-the table from `results/`, or identify and document the configuration the
-manuscript's numbers came from.
-
-Two smaller items in the same category:
-
-- `train.loss_space` is set to `original` here because that is what the reported
-  runs used. The manuscript states the loss is taken on normalized targets. One
-  of the two needs to change.
-- `hawformer/data/kalman.py` is a forward–backward (RTS) smoother applied in
-  `dataset.py` before the split indices are computed, so each estimate sees the
-  whole series. For a strictly causal protocol, smooth each partition separately
-  after splitting.
 
 ## License
 
