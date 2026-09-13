@@ -1,0 +1,65 @@
+inherit: default.yaml
+name: tdrive
+
+# T-Drive: 10,357 Beijing taxis, 2-8 February 2008.
+# https://www.kaggle.com/datasets/arashnic/tdriver
+#
+# Raw GPS only, so nodes are GeoHash cells (precision 6, ~1.2 km x 0.6 km --
+# coarse because T-Drive samples roughly every 5 minutes) and BOTH the flow and
+# the movement corpus come from the same traces.  Flow at a cell is the number
+# of DISTINCT taxis seen there per bin, never the raw point count: point counts
+# would measure the GPS sampling process as much as the traffic.
+#
+# Aggregation runs on the machine holding the raw archive; only the compact
+# result is consumed here.  Nodes are the 150 busiest cells; the long tail
+# carries too few taxis per five minutes to form a usable series.
+#
+# Set the three paths below to wherever the prepared files live.
+
+raw:
+  mode: node_records
+  corpus_tokens: node_ids
+
+  flow:
+    path: data/tdrive/flow_long.csv
+    layout: long
+    timestamp_format: epoch_s
+    columns:
+      node_id: node_id
+      timestamp: time
+      count: flow
+    node_meta: data/tdrive/nodes.csv
+    node_id_column: node_id
+    lat_column: lat
+    lon_column: lon
+
+  corpus_file: data/tdrive/corpus.txt.gz
+
+  # Gaussian-kernel adjacency on great-circle distance between cell centers.
+  # sigma is pinned to roughly one cell width rather than left to the spread of
+  # all pairwise distances, which produced a 53%-dense graph -- far too generous
+  # to serve as the deliberately-imperfect road-network proxy.
+  adj_sigma: 1500
+  adj_epsilon: 0.1
+
+data:
+  batch_size: 16
+  train_stride: 3         # the corpus is dense; every third window
+
+model:
+  d_model: 64
+  n_layers: 2
+  n_heads: 2              # narrower than Qingdao: 150 GeoHash cells, not sensors
+  wavelet_levels: 2
+  Q: 8
+
+train:
+  lr: 0.0003
+  epochs: 250
+  patience: 30
+  warmup_epochs: 1
+  graph_steps: 8
+  refresh_every: 3
+
+eval:
+  horizons: [3, 6, 9, 12]

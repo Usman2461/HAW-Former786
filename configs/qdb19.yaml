@@ -1,0 +1,60 @@
+inherit: default.yaml
+name: qdb19
+
+# Qingdao, 1-19 August 2019, 06:00-18:00 daily: 134 nodes over 2736 five-minute
+# steps.  Node-level passage counts plus taxi trajectories on an instrumented
+# road network.  scripts/prepare_qdb.py builds the tensors.
+#
+# The series is Kalman-smoothed during preparation, so smoothing is off here --
+# smoothing twice is not the protocol.
+#
+# Settings that have a counterpart in the Adap-STWT release take their value, so
+# a number from this config can be placed beside theirs:
+#   Train_Step / Pred_Step 12      -> data.t_history / t_horizon
+#   split_ratio [0.7, 0.1, 0.2]    -> split_ratio
+#   weight_decay 1e-4              -> train.weight_decay
+#   graph_learning_rate 1e-3       -> train.lr_graph
+#   max_adj_num 3                  -> train.bank_size
+#   heads 4, encoder_num 2         -> model.n_heads / n_layers
+#   Word2vec window 5, dim 100     -> micro.window / micro.dim
+
+split_ratio: [0.7, 0.1, 0.2]
+smooth: false
+
+raw:
+  mode: prebuilt          # produced by scripts/prepare_qdb.py
+
+data:
+  t_history: 12
+  t_horizon: 12
+  batch_size: 16
+  train_stride: 1
+
+micro:
+  enabled: true
+  dim: 100
+  window: 5
+  min_count: 2
+  epochs: 5
+
+model:
+  d_model: 64
+  n_layers: 2
+  n_heads: 4
+  wavelet_levels: 2
+  Q: 8
+
+train:
+  lr: 0.0003
+  lr_graph: 0.001
+  weight_decay: 0.0001
+  bank_size: 3
+  epochs: 250
+  patience: 30
+  warmup_epochs: 1
+  graph_steps: 8
+  refresh_every: 3
+
+eval:
+  protocol: adapstwt      # MAE/RMSE over non-zero targets, MAPE over |y| > 0.5
+  horizons: [3, 6, 9, 12]

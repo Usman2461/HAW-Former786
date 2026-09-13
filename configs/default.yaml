@@ -1,0 +1,85 @@
+# Shared defaults. Dataset configs inherit from this file and override.
+# These values are the ones the reported runs used; see results/*/seed0/report.json
+# for the fully-resolved configuration of each headline run.
+
+freq: "5min"
+split_ratio: [0.7, 0.1, 0.2]
+smooth: true                 # Kalman + RTS smoothing of trajectory-derived flow
+seed: 0
+device: auto                 # auto | cpu | cuda | mps
+
+data:
+  t_history: 12              # one hour in
+  t_horizon: 12              # one hour out
+  batch_size: 16
+  num_workers: 0
+  train_stride: 1
+
+micro:                       # skip-gram over GeoHash trajectory tokens
+  enabled: true
+  dim: 100                   # f_e
+  window: 5
+  min_count: 2
+  epochs: 5
+  corpus_limit: null
+
+model:
+  d_model: 64                # d
+  n_layers: 2                # BWST encoder blocks
+  n_heads: 4
+  sim_heads: 2               # M, heads in the pattern-similarity metric
+  wavelet_levels: 2          # J; bands = J + 1
+  cheb_k: 2                  # Chebyshev order K
+  dropout: 0.1
+  time_dim: 16
+  lap_pe_dim: 8
+  # neighborhood budgets: kappa_j = max(kappa_min, ceil(kappa0 * gamma^j))
+  kappa0: 32
+  gamma: 0.5
+  kappa_min: 4
+  geo_topk: 12               # k_geo, static structural support
+  # graph learner
+  topk: 20                   # row sparsity of the fused graph
+  low_dim: 16
+  high_dim: 32
+  P: null                    # semantic groups; null -> chosen by silhouette
+  Q: 8                       # structural groups
+  residual_from_last: true   # persistence-anchored head: Y = delta + X_t
+  # ablation switches (all true = complete model)
+  use_micro: true
+  use_meso: true
+  use_high: true
+  use_gcn: true
+  use_dla: true
+  use_wavelet: true
+  identity_affinity: false
+  soft_membership: true
+  use_spectral_descriptor: true
+  static_hierarchy: false
+  membership_temperature: 1.0
+  reg_covar: 0.01
+
+train:
+  epochs: 250
+  lr: 0.0003
+  lr_graph: 0.001
+  weight_decay: 0.0001
+  grad_clip: 5.0
+  huber_delta: 1.0
+  lambda_a: 0.00001          # L1 on the fused graph
+  lambda_c: 0.0001           # L1 on inter-group affinities
+  bank_size: 3               # graph bank size n
+  refresh_every: 3           # R, hierarchy clock (in epochs)
+  graph_steps: 8             # batches per graph-learner stage
+  patience: 30
+  warmup_epochs: 1
+  alternating: true
+  use_bank: true
+  loss_space: original       # see README, "Known discrepancy"
+  amp: bf16
+
+eval:
+  mape_threshold: 5.0
+  horizons: [3, 6, 9, 12]    # 15 / 30 / 45 / 60 min at 5-min resolution
+  congestion_quantile: 0.75
+  incident_percentile: 95.0
