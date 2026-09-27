@@ -1,12 +1,12 @@
 # HAWFormer
 
-Hierarchy-Aware Adaptive Graph Learning and Band-Wise Wavelet Transformer for
+Hierarchy-Aware Adaptive Graph Learning and Band-Wise Multi-Resolution Transformer for
 traffic flow prediction.
 
-HAWFormer has two modules. **HAGL** infers the dependency graph from three
+HAMFormer has two modules. **HAGL** infers the dependency graph from three
 scales — macroscopic node attributes, microscopic trajectory semantics, and a
 mesoscopic regional organization re-estimated from the graph the model has
-learned — and fuses them with an entry-wise gate. **BWST** predicts from that
+learned — and fuses them with an entry-wise gate. **BMST** predicts from that
 graph: the encoded sequence is split into Haar bands before any spatial operator
 runs, each band gets its own dynamic relation mask and neighborhood budget, and
 the full horizon is decoded in one pass from a persistence-anchored head. The
@@ -83,7 +83,7 @@ and override. The values shipped here are the ones the runs in `results/` used �
 | History / horizon | `T_h = T_p = 12` (one hour in, one hour out at 5 min) |
 | Hidden width | `d = 64`, 2 BWST encoder blocks, 1 decoder |
 | Attention heads | 4 on Qingdao, 2 on T-Drive; `M = 2` similarity heads |
-| Wavelet | `J = 2` Haar levels → 3 bands |
+| Multi-Resolution | `J = 2` Haar levels → 3 bands |
 | Band budget | `κ_j = max(κ_min, ⌈κ₀γ^j⌉)`, `κ₀=32 γ=0.5 κ_min=4` → `[32, 16, 8]` |
 | Graph | `k_geo = 12` structural support, top-20 row sparsity, Chebyshev `K = 2` |
 | Hierarchy | `Q = 8` structural groups, `P` by silhouette, refresh every `R = 3` |
@@ -99,7 +99,7 @@ across the hierarchy from the approximation outward.
 ## Layout
 
 ```
-hawformer/
+hamformer/
   data/      dataset assembly, GeoHash tokenization, Kalman smoothing,
              microscopic (Word2Vec) graph construction
   models/    hagl.py, bwst.py, wavelet.py, hierarchy.py, hawformer.py
@@ -118,9 +118,9 @@ under their own terms.
 ## Citation
 
 ```bibtex
-@article{arshad2026hawformer,
-  title   = {HAWFormer: Hierarchy-Aware Adaptive Graph Learning and Band-Wise
-             Wavelet Transformer for Traffic Flow Prediction},
+@article{arshad2026hamformer,
+  title   = {HAMFormer: Hierarchy-Aware Adaptive Graph Learning and Band-Wise
+             Multi-Resolution Transformer for Traffic Flow Prediction},
   author  = {Arshad, Muhammad Usman and Zhou, Kuanjiu and Li, Yicong},
   year    = {2026}
 }
